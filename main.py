@@ -1,9 +1,18 @@
 import cv2
 import datetime
+import sample
+import utils
+import numpy as np
+from PIL import Image
+from sklearn.linear_model import LogisticRegression
 
 cascPath = "haarcascade_frontalface_default.xml"
 
 faceCascade = cv2.CascadeClassifier(cascPath)
+
+X, y = sample.get_all_samples()
+logmodel = LogisticRegression(multi_class='multinomial').fit(X, y)
+print(logmodel.predict(X))
 
 def detectNearestFace(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -37,6 +46,11 @@ while True:
     image, face = detectNearestFace(frame)
     
     cv2.imshow("", image)
+    
+    if (len(face) != 0):
+        scale = utils.scaleimg(sample.sample_size, Image.fromarray(face))
+        img = utils.rgb2gray(np.array(scale.getdata())) / 255
+        print(logmodel.predict(np.array([img])))
     
     k = cv2.waitKey(1)
     if k%256 == 27:

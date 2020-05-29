@@ -1,12 +1,11 @@
 import os
 import numpy as np
 from PIL import Image
+import utils
 
 sample_dir = 'sample'
 sample_size = (28, 28)
 
-def rgb2gray(rgb):
-    return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
 
 def get_classes():
     return os.listdir(sample_dir)
@@ -18,9 +17,8 @@ def get_class_samples(c):
 
     for x in f:
         im = Image.open(os.path.join(p, x))
-        im.thumbnail(sample_size, Image.ANTIALIAS)
-        im_gray = rgb2gray(np.array(im.getdata()))
-        samples.append(im_gray / 255)
+        im = utils.scaleimg(sample_size, im)
+        samples.append(utils.rgb2gray(np.array(im.getdata())) / 255)
 
     return np.array(samples)
 
@@ -39,8 +37,3 @@ def get_all_samples():
             samples = np.concatenate((samples, class_samples))
 
     return samples, np.array(labels)
-
-# samples, labels = get_all_samples()
-
-# print(samples.shape)
-# print(labels)
