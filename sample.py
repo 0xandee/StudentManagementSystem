@@ -18,7 +18,7 @@ def get_class_samples(c):
     for x in f:
         im = Image.open(os.path.join(p, x))
         im = utils.scaleimg(sample_size, im)
-        samples.append(utils.rgb2gray(np.array(im.getdata())) / 255)
+        samples.append(np.array(im.convert('1')) / 255)
 
     return np.array(samples)
 

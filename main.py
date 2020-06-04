@@ -1,71 +1,22 @@
-import cv2
-import datetime
-import sample
-import utils
-import numpy as np
-from PIL import Image
-from sklearn.linear_model import LogisticRegression
+from src.Loader import Loader
+from src.Conv2D import Conv2D
+from src.Pooling import Pooling
+from src.SoftmaxReg import SoftmaxReg
+from src import Utils
 
-cascPath = "haarcascade_frontalface_default.xml"
+loader = Loader()
+samples, labels = loader.load_samples()
+n_classes = len(set(labels))
+y_encoded = Utils.encode(labels)
 
-faceCascade = cv2.CascadeClassifier(cascPath)
+print("Number of classes:", n_classes)
 
-X, y = sample.get_all_samples()
-logmodel = LogisticRegression(multi_class='multinomial').fit(X, y)
-print(logmodel.predict(X))
+conv = Conv2D(8)
+pool = Pooling()
+soft = SoftmaxReg(13 * 13 * 8, n_classes)
 
-def detectNearestFace(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    
-    faces = faceCascade.detectMultiScale(
-        gray,
-        scaleFactor=1.1,
-        minNeighbors=5,
-        minSize=(30, 30),
-        flags = cv2.CASCADE_SCALE_IMAGE
-    )
-    
-    img = [0, 0, 0, 0]
-    
-    for (x, y, w, h) in faces:
-        if (w > img[2] and h > img[3]):
-            img = [x, y, w, h]
-        
-    (x, y, w, h) = img
-    crop = frame[y:y+h, x:x+w]
-    cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
-    return image, crop
-
-cam = cv2.VideoCapture(0)
-index = 0
-while True:
-    ret, frame = cam.read()
-    if not ret:
-        break
-    
-    image, face = detectNearestFace(frame)
-    
-    cv2.imshow("", image)
-    
-    if (len(face) != 0):
-        scale = utils.scaleimg(sample.sample_size, Image.fromarray(face))
-        img = utils.rgb2gray(np.array(scale.getdata())) / 255
-        print(logmodel.predict(np.array([img])))
-    
-    k = cv2.waitKey(1)
-    if k%256 == 27:
-        # ESC pressed
-        print("Escape hit, closing...")
-        break
-    elif k%256 == 32:
-        #imgname = str(datetime.datetime.now()) + ".png"
-        imgname = "sample/" + str(index) + ".png"
-        index += 1
-        print("Save new image " + imgname)
-        print(face)
-        cv2.imwrite(imgname, face)
-        print(cv2.imwrite(imgname, face))
-    
-
-cam.release()
-cv2.destroyAllWindows()
+for image in samples:
+    out = conv.forward(image)
+    out = pool.forward(out)
+    out = soft.forward(out)
+    soft.backward(y_encoded, 0.01)
