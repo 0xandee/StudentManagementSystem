@@ -6,7 +6,7 @@ class Loader:
 
     def __init__(self):
         self.dir = 'sample'
-        self.size = (28, 28)
+        self.size = (64, 64)
 
     def get_classes(self):
         return os.listdir(self.dir)
@@ -17,7 +17,8 @@ class Loader:
         samples = list()
 
         for x in f:
-            im = cv2.imread(os.path.join(p, x), cv2.IMREAD_GRAYSCALE)
+            im = cv2.imread(os.path.join(p, x))
+            im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
             im = cv2.resize(im, self.size)
             samples.append(im / 255)
 

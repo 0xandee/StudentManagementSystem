@@ -1,17 +1,32 @@
 import numpy as np
+import cv2
 
 class SoftmaxReg:
 
-    def __init__(self, num_features, num_classes):
-        self.weights = np.random.randn(num_features, num_classes)
+    def __init__(self, size, num_classes):
+        (w, h) = size
+        self.size = size
+        self.num_features = w * h
+        self.num_classes = num_classes
+        self.weights = np.random.randn(self.num_features, self.num_classes)
         self.input = None
 
+    def normalize(self, X):
+        max = np.max(X)
+        return X / max
+
     def predict(self, X):
+        if (len(X.shape) == 3):
+            X = cv2.cvtColor(X, cv2.COLOR_BGR2GRAY)
+        X = cv2.resize(X, self.size)
+        X = self.normalize(X.flatten())
         pred = self.compute_h(X)
-        return np.argmax(pred, axis=1)
+        return pred.argmax()
 
     def compute_gradient(self, X, error):
-        return X.T.dot(error)
+        X = X.reshape(self.num_features, 1)
+        error = error.reshape(1, self.num_classes)
+        return X.dot(error)
     
     def softmax_activation(self, x):
         ex = np.exp(x)
@@ -24,13 +39,18 @@ class SoftmaxReg:
         self.input = image.flatten()
         return self.compute_h(self.input)
     
-    def backward(self, y, learning_rate):
-        h = self.compute_h(self.input)
+    def backward(self, h, y, learning_rate):
         error = h - y
-        print(self.input.shape, error.shape)
         gradient = self.compute_gradient(self.input, error)
+        # print(self.weights.shape,"vs",gradient.shape)
         self.weights += -learning_rate * gradient
-        return error
+        return error, gradient
+
+    def fit(self, X, y, learning_rate, epochs):
+        for _ in range(epochs):
+            for i in range(len(X)):
+                h = self.forward(X[i])
+                self.backward(h, y[i], learning_rate)
 
 
     
