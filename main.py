@@ -1,22 +1,20 @@
+from src.FaceDetection import FaceDetection
 from src.Loader import Loader
-from src.Conv2D import Conv2D
-from src.Pooling import Pooling
 from src.SoftmaxReg import SoftmaxReg
-from src import Utils
+from src.Utils import encode
 
 loader = Loader()
-samples, labels = loader.load_samples()
-n_classes = len(set(labels))
-y_encoded = Utils.encode(labels)
+X, y = loader.load_samples()
+num_classes = len(loader.get_classes())
 
-print("Number of classes:", n_classes)
+# print("Number of features:", num_features)
+# print("Number of classes:", num_classes)
 
-conv = Conv2D(8)
-pool = Pooling()
-soft = SoftmaxReg(13 * 13 * 8, n_classes)
+softmax = SoftmaxReg(loader.size, num_classes)
+softmax.fit(X, encode(y), 0.01, 100)
 
-for image in samples:
-    out = conv.forward(image)
-    out = pool.forward(out)
-    out = soft.forward(out)
-    soft.backward(y_encoded, 0.01)
+# for img in X:
+#     softmax.predict(img)
+
+fd = FaceDetection(softmax)
+fd.open()
