@@ -38,10 +38,14 @@ class FaceDetection:
 
             if (cv2.getWindowProperty("acd_face", 1) == -1):
                 break
-            
+
             cv2.imshow("acd_face", frame)
-            cv2.waitKey(1)
+            k = cv2.waitKey(1)
             
+            if k%256 == 27:
+                # ESC pressed
+                print("Escape hit, closing...")
+                break
     
 
     def detect_faces(self, image):
