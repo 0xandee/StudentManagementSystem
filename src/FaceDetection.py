@@ -8,7 +8,7 @@ class FaceDetection:
     def __init__(self, model):
         self.img_index = 0
         self.model = model
-        self.classes = list(set(Loader().get_classes()))
+        self.classes = Loader().get_classes()
         self.cam = cv2.VideoCapture(0)
         self.cascade_path = "haarcascade_frontalface_default.xml"
         self.face_cascade = cv2.CascadeClassifier(self.cascade_path)
@@ -30,6 +30,7 @@ class FaceDetection:
     def open(self):
         cv2.namedWindow("acd_face")
         listimg = list()
+        maxcount = 20
         counts = [0] * len(self.classes)
         last_class = self.classes[0]
 
@@ -46,13 +47,16 @@ class FaceDetection:
 
             if (len(faces) == 1):
                 listimg.append(faces[0])
+                print(self.model.predict(faces[0]))
 
-            if (len(listimg) == 20):
+            if (len(listimg) == maxcount):
                 for f in listimg:
                     counts[self.model.predict(f)] += 1
                 
                 index = counts.index(max(counts))
                 print(self.classes[index])
+                for i in range(len(self.classes)):
+                    print(self.classes[i] , ":", counts[i] / maxcount)
                 listimg.clear()
                 counts = [0] * len(self.classes)
                 exit(0)
@@ -84,10 +88,8 @@ class FaceDetection:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         coord_faces = self.face_cascade.detectMultiScale(
             gray,
-            scaleFactor=1.1,
-            minNeighbors=5,
-            minSize=(30, 30),
-            flags = cv2.CASCADE_SCALE_IMAGE
+            scaleFactor=1.3,
+            minNeighbors=5
         )
         
         faces = []

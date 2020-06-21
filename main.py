@@ -2,6 +2,7 @@ from src.FaceDetection import FaceDetection
 from src.Loader import Loader
 from src.SoftmaxReg import SoftmaxReg
 from src.Utils import encode
+from src.Cnn import CNN
 
 def add_student():
     loader = Loader()
@@ -11,31 +12,33 @@ def add_student():
     # print("Number of features:", num_features)
     # print("Number of classes:", num_classes)
 
-    softmax = SoftmaxReg(loader.size, num_classes)
-    softmax.fit(X, encode(y), 0.01, 100)
-
+    # softmax = SoftmaxReg(loader.size, num_classes)
+    # softmax.fit(X, encode(y), 0.01, 100)
+    cnn = CNN()
+    cnn.fit(X, y, num_classes)
     # for img in X:
     #     softmax.predict(img)
 
-    fd = FaceDetection(softmax)
+    fd = FaceDetection(cnn)
     fd.open2_face()
 
 def check_attendance():
     loader = Loader()
     X, y = loader.load_samples()
+
     num_classes = len(loader.get_classes())
 
 
     # print("Number of features:", num_features)
     # print("Number of classes:", num_classes)
-
-    softmax = SoftmaxReg(loader.size, num_classes)
-    softmax.fit(X, encode(y), 0.01, 100)
+    print(X.shape, y.shape)
+    cnn = CNN(num_classes)
+    cnn.fit(X, y)
 
     # for img in X:
     #     softmax.predict(img)
 
-    fd = FaceDetection(softmax)
+    fd = FaceDetection(cnn)
     fd.open()
 
 ans=True

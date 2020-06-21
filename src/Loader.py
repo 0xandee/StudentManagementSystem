@@ -14,6 +14,7 @@ class Loader:
         for d in dirs:
             if '.' in d:
                 dirs.remove(d)
+        dirs = sorted(dirs)
         return dirs
 
     def load_samples_of_class(self, c):
@@ -37,11 +38,12 @@ class Loader:
 
         for c in classes:
             class_samples = self.load_samples_of_class(c)
-            labels = labels + ([c] * class_samples.shape[0])
-
+            labels = labels + ([self.get_classes().index(c)] * class_samples.shape[0])
+            
             if (samples is None):
                 samples = class_samples
             else:
                 samples = np.concatenate((samples, class_samples))
-
+        samples = samples.reshape((65, 64, 64, 1))
+        print(labels)
         return samples, np.array(labels)
