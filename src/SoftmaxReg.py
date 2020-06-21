@@ -1,4 +1,5 @@
 import numpy as np
+import src.BgSub as BgSub
 import cv2
 
 class SoftmaxReg:
@@ -19,9 +20,11 @@ class SoftmaxReg:
         if (len(X.shape) == 3):
             X = cv2.cvtColor(X, cv2.COLOR_BGR2GRAY)
         X = cv2.resize(X, self.size)
+        X = BgSub.remove_bg(X)
         X = self.normalize(X.flatten())
         pred = self.compute_h(X)
-        return pred.argmax()
+        index = pred.argmax()
+        return index
 
     def compute_gradient(self, X, error):
         X = X.reshape(self.num_features, 1)

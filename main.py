@@ -25,6 +25,7 @@ def check_attendance():
     X, y = loader.load_samples()
     num_classes = len(loader.get_classes())
 
+
     # print("Number of features:", num_features)
     # print("Number of classes:", num_classes)
 

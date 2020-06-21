@@ -1,5 +1,6 @@
 import cv2
 import datetime
+import src.BgSub as BgSub
 from src.Loader import Loader
 
 class FaceDetection:
@@ -28,20 +29,36 @@ class FaceDetection:
 
     def open(self):
         cv2.namedWindow("acd_face")
+        listimg = list()
+        counts = [0] * len(self.classes)
+        last_class = self.classes[0]
+
         while True:
             ret, frame = self.cam.read()
 
             if not ret:
                 break
 
-            image, faces = self.detect_faces(frame)
+            image, faces, frame = self.detect_faces(frame)
 
             if (cv2.getWindowProperty("acd_face", 1) == -1):
                 break
-            
-            cv2.imshow("acd_face", frame)
+
+            if (len(faces) == 1):
+                listimg.append(faces[0])
+
+            if (len(listimg) == 20):
+                for f in listimg:
+                    counts[self.model.predict(f)] += 1
+                
+                index = counts.index(max(counts))
+                print(self.classes[index])
+                listimg.clear()
+                counts = [0] * len(self.classes)
+                exit(0)
+
+            cv2.imshow("acd_face", image)
             cv2.waitKey(1)
-            
     
 
     def detect_faces(self, image):
@@ -55,15 +72,13 @@ class FaceDetection:
         )
         
         faces = []
+        frame = None
 
         for (x, y, w, h) in coord_faces:
             temp = image[y:y+h, x:x+w]
             faces.append(temp)
-            pred = self.model.predict(temp)
-            self.draw_text(image, self.classes[pred], (x, y, w, h))
-            self.draw_rectangle(image, (x, y, w, h))
-            
-        return image, faces
+            frame = (x, y, w, h)
+        return image, faces, frame
     
     def detect_faces2(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

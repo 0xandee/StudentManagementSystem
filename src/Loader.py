@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import cv2
+import src.BgSub as BgSub
 
 class Loader:
 
@@ -9,7 +10,11 @@ class Loader:
         self.size = (64, 64)
 
     def get_classes(self):
-        return os.listdir(self.dir)
+        dirs = os.listdir(self.dir)
+        for d in dirs:
+            if '.' in d:
+                dirs.remove(d)
+        return dirs
 
     def load_samples_of_class(self, c):
         p = os.path.join(self.dir, c)
@@ -20,6 +25,7 @@ class Loader:
             im = cv2.imread(os.path.join(p, x))
             im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
             im = cv2.resize(im, self.size)
+            im = BgSub.remove_bg(im)
             samples.append(im / 255)
 
         return np.array(samples)
